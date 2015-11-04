@@ -4,7 +4,7 @@
     "Simon Mutch <smutch@unimelb.edu.au>"
   ],
   "description": "test of node layouts with d3",
-  "main": "Force-Directed\\ Graph.html",
+  "main": "index.html",
   "moduleType": [],
   "license": "MIT",
   "homepage": "",
