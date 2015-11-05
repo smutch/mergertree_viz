@@ -1,12 +1,12 @@
-m = [
+margin = [
   20
   120
   20
   120
 ]
 
-w = 1280 - (m[1]) - (m[3])
-h = 800 - (m[0]) - (m[2])
+w = 1280 - (margin[1]) - (margin[3])
+h = 800 - (margin[0]) - (margin[2])
 i = 0
 root = undefined
 
@@ -23,10 +23,10 @@ diagonal = d3.svg.diagonal().projection((d) ->
 )
 
 vis = d3.select('#body').append('svg:svg')
-    .attr('width', w + m[1] + m[3])
-    .attr('height', h + m[0] + m[2])
+    .attr('width', w + margin[1] + margin[3])
+    .attr('height', h + margin[0] + margin[2])
     .append('svg:g')
-    .attr('transform', 'translate(' + m[3] + ',' + m[0] + ')')
+    .attr('transform', 'translate(' + margin[3] + ',' + margin[0] + ')')
 
 
 update = (source) ->
