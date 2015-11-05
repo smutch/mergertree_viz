@@ -1,19 +1,17 @@
-
-.node {
+.node circle {
   cursor: pointer;
-  stroke: #3182bd;
-  stroke-width: 3px;
-}
-
-.link {
-  fill: none;
-  stroke: #9ecae1;
+  fill: #fff;
+  stroke: steelblue;
   stroke-width: 1.5px;
 }
 
-#slider {
-    // float: left;
-    clear: left;
-    width: 500px;
-    margin: 15px;
-  }
+.node text {
+  font-size: 11px;
+}
+
+path.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
