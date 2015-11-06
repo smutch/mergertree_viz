@@ -35,15 +35,15 @@ update = (source) ->
   # Compute the new tree layout.
   nodes = tree.nodes(root).reverse()
 
-  # Count the nodes
-  @count = 0
+  # Count the longest tree branch nodes
+  @maxDepth = 0
   nodes.forEach (d) =>
-      @count++
-  console.log(@count)
+      if d.depth > @maxDepth
+          @maxDepth = d.depth
 
   # Normalize for fixed-depth.
   nodes.forEach (d) ->
-    d.y = d.depth * (h/@count)
+    d.y = d.depth * (h/@maxDepth)
     return
 
   # Update the nodes...
@@ -63,11 +63,11 @@ update = (source) ->
   nodeEnter.append('svg:circle').attr('r', 1e-6).style 'fill', (d) ->
     if d._children then 'lightsteelblue' else '#fff'
 
-  nodeEnter.append('svg:text')
-      .attr('y', 10)
-      .attr('x', '1em')
-      .attr('transform', 'rotate(45)')
-      .text((d) -> d.ID).style 'fill-opacity', 1e-6
+  # nodeEnter.append('svg:text')
+  #     .attr('y', 10)
+  #     .attr('x', '1em')
+  #     .attr('transform', 'rotate(45)')
+  #     .text((d) -> d.ID).style 'fill-opacity', 1e-6
 
   # Transition nodes to their new position.
   nodeUpdate = node.transition().duration(duration)
