@@ -35,9 +35,15 @@ update = (source) ->
   # Compute the new tree layout.
   nodes = tree.nodes(root).reverse()
 
+  # Count the nodes
+  @count = 0
+  nodes.forEach (d) =>
+      @count++
+  console.log(@count)
+
   # Normalize for fixed-depth.
   nodes.forEach (d) ->
-    d.y = d.depth * 180
+    d.y = d.depth * (h/@count)
     return
 
   # Update the nodes...
@@ -61,7 +67,7 @@ update = (source) ->
       .attr('y', 10)
       .attr('x', '1em')
       .attr('transform', 'rotate(45)')
-      .text((d) -> d.name).style 'fill-opacity', 1e-6
+      .text((d) -> d.ID).style 'fill-opacity', 1e-6
 
   # Transition nodes to their new position.
   nodeUpdate = node.transition().duration(duration)
@@ -127,8 +133,10 @@ toggle = (d) ->
     d._children = null
   return
 
-d3.json 'flare.json', (json) ->
 
+d3.json 'data/tree_040044985.json', (json) ->
+
+  this.json = json
   toggleAll = (d) ->
     if d.children
       d.children.forEach toggleAll
@@ -140,10 +148,10 @@ d3.json 'flare.json', (json) ->
   root.y0 = 0
 
   # Initialize the display to show a few nodes.
-  root.children.forEach toggleAll
-  toggle root.children[1]
-  toggle root.children[1].children[2]
-  toggle root.children[9]
-  toggle root.children[9].children[0]
+  # root.children.forEach toggleAll
+  # toggle root.children[1]
+  # toggle root.children[1].children[2]
+  # toggle root.children[9]
+  # toggle root.children[9].children[0]
   update root
   return
