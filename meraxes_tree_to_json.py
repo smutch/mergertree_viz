@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 import json
 from collections import deque
 
@@ -37,10 +38,13 @@ def add_galaxy_to_node(node, galaxy):
 
 
 @click.command()
-@click.argument('fname', 'snapshot', 'id')
+@click.argument('fname', type=click.STRING)
+@click.argument('snapshot', type=click.INT)
+@click.argument('id', type=click.STRING)
 def history_to_json(fname, snapshot, id):
     """Generate json version of merger history."""
 
+    id = np.longlong(id)
     meraxes.set_little_h(fname)
 
     gals = meraxes.read_gals(fname, snapshot, props=PROPS, quiet=True)
@@ -48,6 +52,7 @@ def history_to_json(fname, snapshot, id):
 
     # get the ind of our start galaxy
     ind = np.where(gals['ID'] == id)[0]
+    print(ind)
     assert(type(ind) == int)
 
     # read in the walk indices
@@ -85,3 +90,6 @@ def history_to_json(fname, snapshot, id):
         json.dump(data, fd)
 
     print("Conversion complete: %s" % fname_out)
+
+if __name__ == "__main__":
+    history_to_json()
