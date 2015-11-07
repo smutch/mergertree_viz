@@ -10,6 +10,15 @@ h = 800 - (margin[0]) - (margin[2])
 i = 0
 root = undefined
 
+nodeFillColor = (d) ->
+  if d._children
+    if d.GhostFlag
+      '#aaa'
+    else
+      'lightsteelblue'
+  else
+      '#fff'
+
 tree = d3.layout.tree().size([
   h
   w
@@ -71,11 +80,9 @@ update = (source) ->
 
   window.nodeEnter = nodeEnter
 
-  nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', (d) ->
-    if d._children then 'lightsteelblue' else '#fff'
+  nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', nodeFillColor
   nodeEnter.filter( (d) -> d.Type > 0 ).append('svg:rect')
-      .attr('width', 1e-6).attr('height', 1e-6).style 'fill', (d) ->
-        if d._children then 'lightsteelblue' else '#fff'
+      .attr('width', 1e-6).attr('height', 1e-6).style 'fill', nodeFillColor
 
   # nodeEnter.append('svg:text')
   #     .attr('y', 10)
@@ -91,10 +98,9 @@ update = (source) ->
         'translate(' + (d.x - nodeRadius) + ',' + (d.y - nodeRadius) + ')'
   )
 
-  nodeUpdate.select('circle').attr('r', nodeRadius).style 'fill', (d) ->
-    if d._children then 'lightsteelblue' else '#fff'
+  nodeUpdate.select('circle').attr('r', nodeRadius).style 'fill', nodeFillColor
   nodeUpdate.select('rect').attr('width', 2*nodeRadius).attr('height', 2*nodeRadius)
-      .style 'fill', (d) -> if d._children then 'lightsteelblue' else '#fff'
+      .style 'fill', nodeFillColor
 
   nodeUpdate.select('text').style 'fill-opacity', 1
 
