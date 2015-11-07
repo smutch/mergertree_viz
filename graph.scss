@@ -1,8 +1,12 @@
-.node circle, rect {
+.node * {
   cursor: pointer;
   fill: #fff;
   stroke: steelblue;
   stroke-width: 1.5px;
+}
+
+.node.ghost * {
+  stroke: #aaa;
 }
 
 .node text {

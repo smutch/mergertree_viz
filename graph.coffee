@@ -53,12 +53,16 @@ update = (source) ->
   )
 
   # Enter any new nodes at the parent's previous position.
-  nodeEnter = node.enter().append('svg:g').attr('class', (d) -> 'node type'+d.Type)
-    .attr('transform', (d) ->
-      if d.Type is 0
-          'translate(' + source.x0 + ',' + source.y0 + ')'
-      else
-          'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
+  nodeEnter = node.enter().append('svg:g').attr('class', (d) ->
+    cls = 'node type'+d.Type
+    if d.GhostFlag then cls+=' ghost'
+    cls
+  )
+  .attr('transform', (d) ->
+    if d.Type is 0
+        'translate(' + source.x0 + ',' + source.y0 + ')'
+    else
+        'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
   ).on('click', (d) ->
     toggle d
     update d
