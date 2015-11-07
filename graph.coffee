@@ -31,6 +31,7 @@ vis = d3.select('#body').append('svg:svg')
 
 update = (source) ->
   duration = if d3.event and d3.event.altKey then 5000 else 500
+  nodeRadius = 4.5
 
   # Compute the new tree layout.
   nodes = tree.nodes(root).reverse()
@@ -54,15 +55,23 @@ update = (source) ->
   # Enter any new nodes at the parent's previous position.
   nodeEnter = node.enter().append('svg:g').attr('class', (d) -> 'node type'+d.Type)
     .attr('transform', (d) ->
-      'translate(' + source.x0 + ',' + source.y0 + ')'
+      if d.Type is 0
+          'translate(' + source.x0 + ',' + source.y0 + ')'
+      else
+          'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
   ).on('click', (d) ->
     toggle d
     update d
     return
   )
 
-  nodeEnter.append('svg:circle').attr('r', 1e-6).style 'fill', (d) ->
+  window.nodeEnter = nodeEnter
+
+  nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', (d) ->
     if d._children then 'lightsteelblue' else '#fff'
+  nodeEnter.filter( (d) -> d.Type > 0 ).append('svg:rect')
+      .attr('width', 1e-6).attr('height', 1e-6).style 'fill', (d) ->
+        if d._children then 'lightsteelblue' else '#fff'
 
   # nodeEnter.append('svg:text')
   #     .attr('y', 10)
@@ -71,12 +80,17 @@ update = (source) ->
   #     .text((d) -> d.ID).style 'fill-opacity', 1e-6
 
   # Transition nodes to their new position.
-  nodeUpdate = node.transition().duration(duration)
-      .attr('transform', (d) -> 'translate(' + d.x + ',' + d.y + ')'
+  nodeUpdate = node.transition().duration(duration).attr('transform', (d) ->
+    if d.Type is 0
+        'translate(' + d.x + ',' + d.y + ')'
+    else
+        'translate(' + (d.x - nodeRadius) + ',' + (d.y - nodeRadius) + ')'
   )
 
-  nodeUpdate.select('circle').attr('r', 4.5).style 'fill', (d) ->
+  nodeUpdate.select('circle').attr('r', nodeRadius).style 'fill', (d) ->
     if d._children then 'lightsteelblue' else '#fff'
+  nodeUpdate.select('rect').attr('width', 2*nodeRadius).attr('height', 2*nodeRadius)
+      .style 'fill', (d) -> if d._children then 'lightsteelblue' else '#fff'
 
   nodeUpdate.select('text').style 'fill-opacity', 1
 
@@ -87,6 +101,7 @@ update = (source) ->
   ).remove()
 
   nodeExit.select('circle').attr 'r', 1e-6
+  nodeExit.select('rect').attr('width', 1e-6).attr('height', 1e-6)
   nodeExit.select('text').style 'fill-opacity', 1e-6
 
   # Update the links…
