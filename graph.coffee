@@ -52,8 +52,9 @@ update = (source) ->
   )
 
   # Enter any new nodes at the parent's previous position.
-  nodeEnter = node.enter().append('svg:g').attr('class', 'node').attr('transform', (d) ->
-    'translate(' + source.x0 + ',' + source.y0 + ')'
+  nodeEnter = node.enter().append('svg:g').attr('class', (d) -> 'node type'+d.Type)
+    .attr('transform', (d) ->
+      'translate(' + source.x0 + ',' + source.y0 + ')'
   ).on('click', (d) ->
     toggle d
     update d
