@@ -1,15 +1,19 @@
+# Set up margins and canvas size
 margin = [
   20
   120
   20
   120
 ]
-
 w = 1280 - (margin[1]) - (margin[3])
 h = 800 - (margin[0]) - (margin[2])
+
+# Init variables
 i = 0
 root = undefined
+nodeRadius = 4.5
 
+# Set the node fill color based on properties
 nodeFillColor = (d) ->
   if d._children
     if d.GhostFlag
@@ -19,11 +23,13 @@ nodeFillColor = (d) ->
   else
       '#fff'
 
+# Create the tree layout
 tree = d3.layout.tree().size([
   h
   w
 ])
 
+# define diagonal projection for the tree
 diagonal = d3.svg.diagonal().projection((d) ->
   [
     d.x
@@ -31,6 +37,7 @@ diagonal = d3.svg.diagonal().projection((d) ->
   ]
 )
 
+# create the visualisation
 vis = d3.select('#body').append('svg:svg')
     .attr('width', w + margin[1] + margin[3])
     .attr('height', h + margin[0] + margin[2])
@@ -38,9 +45,9 @@ vis = d3.select('#body').append('svg:svg')
     .attr('transform', 'translate(' + margin[3] + ',' + margin[0] + ')')
 
 
+# workhorse function which is used to place nodes, paths and deal with transitions
 update = (source) ->
   duration = if d3.event and d3.event.altKey then 5000 else 500
-  nodeRadius = 4.5
 
   # Compute the new tree layout.
   nodes = tree.nodes(root).reverse()
@@ -77,8 +84,6 @@ update = (source) ->
     update d
     return
   )
-
-  window.nodeEnter = nodeEnter
 
   nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', nodeFillColor
   nodeEnter.filter( (d) -> d.Type > 0 ).append('svg:rect')
@@ -160,15 +165,17 @@ toggle = (d) ->
   return
 
 
+# 'main' function for the tree visualisation using a json file as input
 d3.json 'data/tree_040044985.json', (json) ->
 
-  this.json = json
+  @json = json
   toggleAll = (d) ->
     if d.children
       d.children.forEach toggleAll
       toggle d
     return
 
+  # define the root and place it
   root = json
   root.x0 = w / 2
   root.y0 = 0
