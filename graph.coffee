@@ -47,9 +47,20 @@ nodeFillColor = (d) ->
 
 
 # Normalize y-coord for fixed-depth.
-spreadYVals = (d) ->
-    d.y = d.depth * (h/@maxDepth)
+spreadYVals = (d, maxDepth) ->
+    d.y = d.depth * (h/maxDepth)
 
+# calculate statistics for the visible tree at each update
+calcGraphStats = (nodes) ->
+  maxDepth = 0
+  minSnap = 99999
+  maxSnap = -1
+  for d in nodes
+    if d.depth > maxDepth then maxDepth = d.depth
+    snap = Number d.name.split('|')[0]
+    if snap > maxSnap then maxSnap = snap
+    if snap < minSnap then minSnap = snap
+  [maxDepth, minSnap, maxSnap]
 
 # workhorse function which is used to place nodes, paths and deal with transitions
 update = (source) ->
@@ -58,14 +69,11 @@ update = (source) ->
   # Compute the new tree layout.
   nodes = tree.nodes(root).reverse()
 
-  # Count the longest tree branch nodes
-  @maxDepth = 0
-  nodes.forEach (d) ->
-      if d.depth > @maxDepth
-          @maxDepth = d.depth
+  # calculate statistics for the visible tree at each update
+  [maxDepth, minSnap, maxSnap] = calcGraphStats nodes
 
-  # Normalize for fixed-depth.
-  nodes.forEach spreadYVals
+  # normalize positions for fixed-depth
+  nodes.forEach (d) -> spreadYVals d, maxDepth
 
   # Update the nodes...
   node = vis.selectAll('g.node').data(nodes, (d) ->
@@ -78,7 +86,8 @@ update = (source) ->
     if d.GhostFlag then cls+=' ghost'
     cls
   )
-  .attr('transform', (d) ->
+  
+  nodeEnter.attr('transform', (d) ->
     if d.Type is 0
         'translate(' + source.x0 + ',' + source.y0 + ')'
     else
@@ -88,6 +97,7 @@ update = (source) ->
     update d
     return
   )
+
 
   nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', nodeFillColor
   nodeEnter.filter( (d) -> d.Type > 0 ).append('svg:rect')
@@ -176,6 +186,7 @@ toggle = (d) ->
 # 'main' function for the tree visualisation using a json file as input
 d3.json 'data/tree_040044985.json', (json) ->
 
+  # Let's make these available for debugging...
   @json = json
   @tree = tree
 
