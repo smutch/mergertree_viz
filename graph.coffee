@@ -13,16 +13,6 @@ i = 0
 root = undefined
 nodeRadius = 4.5
 
-# Set the node fill color based on properties
-nodeFillColor = (d) ->
-  if d._children
-    if d.GhostFlag
-      '#aaa'
-    else
-      'lightsteelblue'
-  else
-      '#fff'
-
 # Create the tree layout
 tree = d3.layout.tree().size([
   h
@@ -45,6 +35,22 @@ vis = d3.select('#body').append('svg:svg')
     .attr('transform', 'translate(' + margin[3] + ',' + margin[0] + ')')
 
 
+# Set the node fill color based on properties
+nodeFillColor = (d) ->
+  if d._children
+    if d.GhostFlag
+      '#aaa'
+    else
+      'lightsteelblue'
+  else
+      '#fff'
+
+
+# Normalize y-coord for fixed-depth.
+spreadYVals = (d) ->
+    d.y = d.depth * (h/@maxDepth)
+
+
 # workhorse function which is used to place nodes, paths and deal with transitions
 update = (source) ->
   duration = if d3.event and d3.event.altKey then 5000 else 500
@@ -54,14 +60,12 @@ update = (source) ->
 
   # Count the longest tree branch nodes
   @maxDepth = 0
-  nodes.forEach (d) =>
+  nodes.forEach (d) ->
       if d.depth > @maxDepth
           @maxDepth = d.depth
 
   # Normalize for fixed-depth.
-  nodes.forEach (d) ->
-    d.y = d.depth * (h/@maxDepth)
-    return
+  nodes.forEach spreadYVals
 
   # Update the nodes...
   node = vis.selectAll('g.node').data(nodes, (d) ->
@@ -125,14 +129,18 @@ update = (source) ->
   )
 
   # Enter any new links at the parent's previous position.
-  link.enter().insert('svg:path', 'g').attr('class', 'link').attr('d', (d) ->
+  linkEnter = link.enter().insert('svg:path', 'g').attr('class', 'link').attr('d', (d) ->
     o =
       x: source.x0
       y: source.y0
     diagonal
       source: o
       target: o
-  ).transition().duration(duration).attr 'd', diagonal
+  )
+  
+  linkEnter.transition().duration(duration).attr 'd', diagonal
+  linkEnter.style 'stroke', (d) ->
+    if d.target.mainProg then '#000' else '#ccc'
 
   # Transition links to their new position.
   link.transition().duration(duration).attr 'd', diagonal
@@ -169,6 +177,8 @@ toggle = (d) ->
 d3.json 'data/tree_040044985.json', (json) ->
 
   @json = json
+  @tree = tree
+
   toggleAll = (d) ->
     if d.children
       d.children.forEach toggleAll
@@ -179,6 +189,12 @@ d3.json 'data/tree_040044985.json', (json) ->
   root = json
   root.x0 = w / 2
   root.y0 = 0
+
+  # Uniquely identify the main progenitor branch
+  node = root
+  while node.children
+    node = node.children[0]
+    node.mainProg = true
 
   # Initialize the display to show a few nodes.
   # root.children.forEach toggleAll
