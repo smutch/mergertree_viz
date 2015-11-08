@@ -46,10 +46,6 @@ nodeFillColor = (d) ->
       '#fff'
 
 
-# Normalize y-coord for fixed-depth.
-spreadYVals = (d, maxDepth) ->
-    d.y = d.depth * (h/maxDepth)
-
 # calculate statistics for the visible tree at each update
 calcGraphStats = (nodes) ->
   maxDepth = 0
@@ -62,6 +58,7 @@ calcGraphStats = (nodes) ->
     if snap < minSnap then minSnap = snap
   [maxDepth, minSnap, maxSnap]
 
+
 # workhorse function which is used to place nodes, paths and deal with transitions
 update = (source) ->
   duration = if d3.event and d3.event.altKey then 5000 else 500
@@ -73,7 +70,18 @@ update = (source) ->
   [maxDepth, minSnap, maxSnap] = calcGraphStats nodes
 
   # normalize positions for fixed-depth
-  nodes.forEach (d) -> spreadYVals d, maxDepth
+  nodes.forEach (d) -> d.y = d.depth * (h/maxDepth)
+
+  # Enter any new snapshot lines
+  snapLineEnter = vis.selectAll('g.snapLine').data([minSnap..maxSnap]).enter()
+  snapLineEnter.append('svg:line')
+    .attr('x1', 0)
+    .attr('x2', w)
+    .attr('y1', (d, i) -> i * (h/(maxSnap-minSnap)))
+    .attr('y2', (d, i) -> i * (h/(maxSnap-minSnap)))
+    .style('stroke', '#aaa')
+    .style('stroke-opacity', 0.2)
+    .style('stroke-width', 1)
 
   # Update the nodes...
   node = vis.selectAll('g.node').data(nodes, (d) ->
@@ -97,7 +105,6 @@ update = (source) ->
     update d
     return
   )
-
 
   nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', nodeFillColor
   nodeEnter.filter( (d) -> d.Type > 0 ).append('svg:rect')
@@ -171,6 +178,7 @@ update = (source) ->
     d.y0 = d.y
     return
   return
+
 
 # Toggle children.
 toggle = (d) ->
