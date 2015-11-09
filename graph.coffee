@@ -74,26 +74,52 @@ update = (source) ->
 
   # Enter any new snapshot lines
   console.log(minSnap, maxSnap)
-  snapLines = vis.selectAll('g.snapLine').data([minSnap..maxSnap], (d, i) -> [minSnap..maxSnap][i])
-  snapLines.enter()
+  if (maxSnap - minSnap + 1) > 50
+    snaps = []
+    [maxSnap..minSnap].map((v) -> if !(v % 2) then snaps.push(v))
+    snapEvery = 2
+  else
+    snaps = [maxSnap..minSnap]
+    snapEvery = 1
+  snapLines = vis.selectAll('g.snapLine').data(snaps, (d, i) -> d.valueOf())
+  snapLinesEnter = snapLines.enter()
     .append('svg:g')
     .attr('class', 'snapLine')
-    .append('svg:line')
+ 
+  ySnapLine = (d, i) ->
+    i * (h/(maxSnap-minSnap)) * snapEvery
+
+  snapLinesEnter.append('svg:line')
     .attr('x1', 0)
     .attr('x2', w)
-    .attr('y1', (d, i) -> i * (h/(maxSnap-minSnap)))
-    .attr('y2', (d, i) -> i * (h/(maxSnap-minSnap)))
+    .attr('y1', ySnapLine)
+    .attr('y2', ySnapLine)
     .style('stroke', '#aaa')
-    .style('stroke-opacity', 0.2)
     .style('stroke-width', 1)
+    .style('stroke-opacity', 0)
+
+  snapLinesEnter.append('svg:text')
+    .attr('y', ySnapLine)
+    .attr('x', '0')
+    .attr('dx', '-5')
+    .attr('dy', '.35em')
+    .text((d) -> d.valueOf())
+    .style('fill-opacity', 0)
 
   # Update snaplines
   snapLines.select('line').transition().duration(duration)
-    .attr('y1', (d, i) -> i * (h/(maxSnap-minSnap)))
-    .attr('y2', (d, i) -> i * (h/(maxSnap-minSnap)))
+    .attr('y1', ySnapLine)
+    .attr('y2', ySnapLine)
+    .style('stroke-opacity', 0.2)
+
+  snapLines.select('text').transition().duration(duration)
+    .attr('y', ySnapLine)
+    .style('fill-opacity', 0.2)
 
   # exit snaplines
-  snapLines.exit().transition().remove().select('line').attr('stroke-opacity', 0)
+  snapExit = snapLines.exit().transition().duration(duration).remove()
+  snapExit.select('line').style('stroke-opacity', 0)
+  snapExit.select('text').style('fill-opacity', 0)
 
   # Update the nodes...
   node = vis.selectAll('g.node').data(nodes, (d) ->
@@ -109,9 +135,9 @@ update = (source) ->
   
   nodeEnter.attr('transform', (d) ->
     if d.Type is 0
-        'translate(' + source.x0 + ',' + source.y0 + ')'
+      'translate(' + source.x0 + ',' + source.y0 + ')'
     else
-        'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
+      'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
   ).on('click', (d) ->
     toggle d
     update d
@@ -140,7 +166,7 @@ update = (source) ->
   nodeUpdate.select('rect').attr('width', 2*nodeRadius).attr('height', 2*nodeRadius)
       .style 'fill', nodeFillColor
 
-  nodeUpdate.select('text').style 'fill-opacity', 1
+  # nodeUpdate.select('text').style 'fill-opacity', 1
 
   # Transition exiting nodes to the parent's new position.
   nodeExit = node.exit().transition()
@@ -150,7 +176,7 @@ update = (source) ->
 
   nodeExit.select('circle').attr 'r', 1e-6
   nodeExit.select('rect').attr('width', 1e-6).attr('height', 1e-6)
-  nodeExit.select('text').style 'fill-opacity', 1e-6
+  # nodeExit.select('text').style 'fill-opacity', 1e-6
 
   # Update the links…
   link = vis.selectAll('path.link').data(tree.links(nodes), (d) ->
