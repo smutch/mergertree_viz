@@ -13,7 +13,8 @@
 .snapLine text {
   display: block;
   text-anchor: end;
-  padding-right: 10; }
+  padding-right: 10;
+  font-family: arial; }
 
 path.link {
   fill: none;
