@@ -10,6 +10,11 @@
 .node text {
   font-size: 11px; }
 
+.snapLine text {
+  display: block;
+  text-anchor: end;
+  padding-right: 10; }
+
 path.link {
   fill: none;
   stroke-width: 1.5px; }

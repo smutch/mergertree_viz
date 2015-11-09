@@ -56,7 +56,7 @@
   };
 
   update = function(source) {
-    var duration, j, link, linkEnter, maxDepth, maxSnap, minSnap, node, nodeEnter, nodeExit, nodeUpdate, nodes, ref, results, snapLines;
+    var duration, j, k, link, linkEnter, maxDepth, maxSnap, minSnap, node, nodeEnter, nodeExit, nodeUpdate, nodes, ref, results, results1, snapEvery, snapExit, snapLines, snapLinesEnter, snaps, ySnapLine;
     duration = d3.event && d3.event.altKey ? 5000 : 500;
     nodes = tree.nodes(root).reverse();
     ref = calcGraphStats(nodes), maxDepth = ref[0], minSnap = ref[1], maxSnap = ref[2];
@@ -64,29 +64,42 @@
       return d.y = d.depth * (h / maxDepth);
     });
     console.log(minSnap, maxSnap);
-    snapLines = vis.selectAll('g.snapLine').data((function() {
-      results = [];
-      for (var j = minSnap; minSnap <= maxSnap ? j <= maxSnap : j >= maxSnap; minSnap <= maxSnap ? j++ : j--){ results.push(j); }
-      return results;
-    }).apply(this), function(d, i) {
-      var k, results1;
-      return (function() {
+    if ((maxSnap - minSnap + 1) > 50) {
+      snaps = [];
+      (function() {
+        results = [];
+        for (var j = maxSnap; maxSnap <= minSnap ? j <= minSnap : j >= minSnap; maxSnap <= minSnap ? j++ : j--){ results.push(j); }
+        return results;
+      }).apply(this).map(function(v) {
+        if (!(v % 2)) {
+          return snaps.push(v);
+        }
+      });
+      snapEvery = 2;
+    } else {
+      snaps = (function() {
         results1 = [];
-        for (var k = minSnap; minSnap <= maxSnap ? k <= maxSnap : k >= maxSnap; minSnap <= maxSnap ? k++ : k--){ results1.push(k); }
+        for (var k = maxSnap; maxSnap <= minSnap ? k <= minSnap : k >= minSnap; maxSnap <= minSnap ? k++ : k--){ results1.push(k); }
         return results1;
-      }).apply(this)[i];
+      }).apply(this);
+      snapEvery = 1;
+    }
+    snapLines = vis.selectAll('g.snapLine').data(snaps, function(d, i) {
+      return d.valueOf();
     });
-    snapLines.enter().append('svg:g').attr('class', 'snapLine').append('svg:line').attr('x1', 0).attr('x2', w).attr('y1', function(d, i) {
-      return i * (h / (maxSnap - minSnap));
-    }).attr('y2', function(d, i) {
-      return i * (h / (maxSnap - minSnap));
-    }).style('stroke', '#aaa').style('stroke-opacity', 0.2).style('stroke-width', 1);
-    snapLines.select('line').transition().duration(duration).attr('y1', function(d, i) {
-      return i * (h / (maxSnap - minSnap));
-    }).attr('y2', function(d, i) {
-      return i * (h / (maxSnap - minSnap));
-    });
-    snapLines.exit().transition().remove().select('line').attr('stroke-opacity', 0);
+    snapLinesEnter = snapLines.enter().append('svg:g').attr('class', 'snapLine');
+    ySnapLine = function(d, i) {
+      return i * (h / (maxSnap - minSnap)) * snapEvery;
+    };
+    snapLinesEnter.append('svg:line').attr('x1', 0).attr('x2', w).attr('y1', ySnapLine).attr('y2', ySnapLine).style('stroke', '#aaa').style('stroke-width', 1).style('stroke-opacity', 0);
+    snapLinesEnter.append('svg:text').attr('y', ySnapLine).attr('x', '0').attr('dx', '-5').attr('dy', '.35em').text(function(d) {
+      return d.valueOf();
+    }).style('fill-opacity', 0);
+    snapLines.select('line').transition().duration(duration).attr('y1', ySnapLine).attr('y2', ySnapLine).style('stroke-opacity', 0.2);
+    snapLines.select('text').transition().duration(duration).attr('y', ySnapLine).style('fill-opacity', 0.2);
+    snapExit = snapLines.exit().transition().duration(duration).remove();
+    snapExit.select('line').style('stroke-opacity', 0);
+    snapExit.select('text').style('fill-opacity', 0);
     node = vis.selectAll('g.node').data(nodes, function(d) {
       return d.id || (d.id = ++i);
     });
@@ -123,13 +136,11 @@
     });
     nodeUpdate.select('circle').attr('r', nodeRadius).style('fill', nodeFillColor);
     nodeUpdate.select('rect').attr('width', 2 * nodeRadius).attr('height', 2 * nodeRadius).style('fill', nodeFillColor);
-    nodeUpdate.select('text').style('fill-opacity', 1);
     nodeExit = node.exit().transition().duration(duration).attr('transform', function(d) {
       return 'translate(' + source.x + ',' + source.y + ')';
     }).remove();
     nodeExit.select('circle').attr('r', 1e-6);
     nodeExit.select('rect').attr('width', 1e-6).attr('height', 1e-6);
-    nodeExit.select('text').style('fill-opacity', 1e-6);
     link = vis.selectAll('path.link').data(tree.links(nodes), function(d) {
       return d.target.id;
     });
