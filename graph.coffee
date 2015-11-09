@@ -73,8 +73,12 @@ update = (source) ->
   nodes.forEach (d) -> d.y = d.depth * (h/maxDepth)
 
   # Enter any new snapshot lines
-  snapLineEnter = vis.selectAll('g.snapLine').data([minSnap..maxSnap]).enter()
-  snapLineEnter.append('svg:line')
+  console.log(minSnap, maxSnap)
+  snapLines = vis.selectAll('g.snapLine').data([minSnap..maxSnap], (d, i) -> [minSnap..maxSnap][i])
+  snapLines.enter()
+    .append('svg:g')
+    .attr('class', 'snapLine')
+    .append('svg:line')
     .attr('x1', 0)
     .attr('x2', w)
     .attr('y1', (d, i) -> i * (h/(maxSnap-minSnap)))
@@ -82,6 +86,14 @@ update = (source) ->
     .style('stroke', '#aaa')
     .style('stroke-opacity', 0.2)
     .style('stroke-width', 1)
+
+  # Update snaplines
+  snapLines.select('line').transition().duration(duration)
+    .attr('y1', (d, i) -> i * (h/(maxSnap-minSnap)))
+    .attr('y2', (d, i) -> i * (h/(maxSnap-minSnap)))
+
+  # exit snaplines
+  snapLines.exit().transition().remove().select('line').attr('stroke-opacity', 0)
 
   # Update the nodes...
   node = vis.selectAll('g.node').data(nodes, (d) ->
