@@ -228,6 +228,14 @@ toggle = (d) ->
     d._children = null
   return
 
+# Open all children of nodes below
+openAll = (d) ->
+  if d._children
+    d.children = d._children
+    d._children = null
+  if d.children
+    d.children.forEach openAll
+
 
 # 'main' function for the tree visualisation using a json file as input
 d3.json 'data/tree_040044985.json', (json) ->
@@ -260,4 +268,14 @@ d3.json 'data/tree_040044985.json', (json) ->
   # toggle root.children[9]
   # toggle root.children[9].children[0]
   update root
-  return
+
+# 'global' key events
+window.addEventListener "keydown", (event) ->
+  if event.defaultPrevented
+    return # Should do nothing if the key event was already consumed.
+  else
+    keyCode = if event.which then event.which else event.keyCode
+    if keyCode is 65
+      openAll root
+      update root
+
