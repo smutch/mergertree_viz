@@ -84,7 +84,6 @@
     nodes.forEach(function(d) {
       return d.y = d.depth * (h / maxDepth);
     });
-    console.log(minSnap, maxSnap);
     if ((maxSnap - minSnap + 1) > 50) {
       snaps = [];
       (function() {
@@ -139,13 +138,14 @@
         return 'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')';
       }
     }).on('click', function(d) {
-      if (d3.event && d3.event.shiftKey) {
-        toggleFirstProgLineTag(d, 'hlProg');
-        return update(d);
-      } else {
-        toggle(d);
-        return update(d);
-      }
+      toggle(d);
+      return update(d);
+    }).on('mouseover', function(d) {
+      toggleFirstProgLineTag(d, 'hlProg');
+      return update(d);
+    }).on('mouseout', function(d) {
+      toggleFirstProgLineTag(d, 'hlProg');
+      return update(d);
     });
     nodeEnter.filter(function(d) {
       return d.Type === 0;
