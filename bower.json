@@ -1,5 +1,5 @@
 {
-  "name": "codeflower-day0",
+  "name": "mergertree viz",
   "authors": [
     "Simon Mutch <smutch@unimelb.edu.au>"
   ],
@@ -20,6 +20,6 @@
     "d3": "~3.5.6",
     "jquery-ui": "~1.11.4",
     "jquery": "~2.1.4",
-    "webcola": "~3.1.0"
+    "d3-tip": "~0.6.7"
   }
 }
