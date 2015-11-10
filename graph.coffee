@@ -91,7 +91,6 @@ update = (source) ->
   nodes.forEach (d) -> d.y = d.depth * (h/maxDepth)
 
   # Enter any new snapshot lines
-  console.log(minSnap, maxSnap)
   if (maxSnap - minSnap + 1) > 50
     snaps = []
     [maxSnap..minSnap].map((v) -> if !(v % 2) then snaps.push(v))
@@ -103,7 +102,7 @@ update = (source) ->
   snapLinesEnter = snapLines.enter()
     .append('svg:g')
     .attr('class', 'snapLine')
- 
+
   ySnapLine = (d, i) ->
     i * (h/(maxSnap-minSnap)) * snapEvery
 
@@ -150,19 +149,21 @@ update = (source) ->
     if d.GhostFlag then cls+=' ghost'
     cls
   )
-  
+
   nodeEnter.attr('transform', (d) ->
     if d.Type is 0
       'translate(' + source.x0 + ',' + source.y0 + ')'
     else
       'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
   ).on('click', (d) ->
-    if d3.event and d3.event.shiftKey
-      toggleFirstProgLineTag d, 'hlProg'
-      update d
-    else
-      toggle d
-      update d
+    toggle d
+    update d
+  ).on('mouseover', (d) ->
+    toggleFirstProgLineTag d, 'hlProg'
+    update d
+  ).on('mouseout', (d) ->
+    toggleFirstProgLineTag d, 'hlProg'
+    update d
   )
 
   nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', nodeFillColor
@@ -213,7 +214,7 @@ update = (source) ->
       source: o
       target: o
   )
-  
+
   linkEnter.transition().duration(duration).attr 'd', diagonal
 
   # Transition links to their new position.
@@ -300,4 +301,3 @@ window.addEventListener "keydown", (event) ->
     if keyCode is 65
       openAll root
       update root
-
