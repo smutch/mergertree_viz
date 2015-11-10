@@ -59,6 +59,24 @@ calcGraphStats = (nodes) ->
   [maxDepth, minSnap, maxSnap]
 
 
+toggleTag = (node, tag) ->
+    node[tag] = if node[tag] then false else true
+
+# tag a first progenitor line
+toggleFirstProgLineTag = (selNode, tag) ->
+  toggleTag(selNode, tag)
+
+  node = selNode
+  while node.parent
+    node = node.parent
+    toggleTag(node, tag)
+
+  node = selNode
+  while node.children
+    node = node.children[0]
+    toggleTag(node, tag)
+
+
 # workhorse function which is used to place nodes, paths and deal with transitions
 update = (source) ->
   duration = if d3.event and d3.event.altKey then 5000 else 500
@@ -139,9 +157,12 @@ update = (source) ->
     else
       'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
   ).on('click', (d) ->
-    toggle d
-    update d
-    return
+    if d3.event and d3.event.shiftKey
+      toggleFirstProgLineTag d, 'hlProg'
+      update d
+    else
+      toggle d
+      update d
   )
 
   nodeEnter.filter( (d) -> d.Type is 0 ).append('svg:circle').attr('r', 1e-6).style 'fill', nodeFillColor
@@ -194,11 +215,16 @@ update = (source) ->
   )
   
   linkEnter.transition().duration(duration).attr 'd', diagonal
-  linkEnter.style 'stroke', (d) ->
-    if d.target.mainProg then '#000' else '#ccc'
 
   # Transition links to their new position.
-  link.transition().duration(duration).attr 'd', diagonal
+  link.transition().duration(duration).attr('d', diagonal)
+    .style 'stroke', (d) ->
+      if d.target.mainProg
+        '#000'
+      else if d.target.hlProg
+        'red'
+      else
+        '#ccc'
 
   # Transition exiting nodes to the parent's new position.
   link.exit().transition().duration(duration).attr('d', (d) ->
@@ -236,7 +262,6 @@ openAll = (d) ->
   if d.children
     d.children.forEach openAll
 
-
 # 'main' function for the tree visualisation using a json file as input
 d3.json 'data/tree_040044985.json', (json) ->
 
@@ -256,10 +281,7 @@ d3.json 'data/tree_040044985.json', (json) ->
   root.y0 = 0
 
   # Uniquely identify the main progenitor branch
-  node = root
-  while node.children
-    node = node.children[0]
-    node.mainProg = true
+  toggleFirstProgLineTag root, 'mainProg'
 
   # Initialize the display to show a few nodes.
   # root.children.forEach toggleAll
