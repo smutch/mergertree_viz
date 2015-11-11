@@ -77,6 +77,20 @@ toggleFirstProgLineTag = (selNode, tag) ->
     toggleTag(node, tag)
 
 
+# create our tooltip handler
+tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .html((d) ->
+    param = '<span class="param">M<sub>*</sub></span>'
+    unit = '<span class="unit">M<sub>☉</sub></span>'
+    if d.StellarMass is 0
+      param + ' = 0 ' + unit
+    else
+      param + ' = 10<sup>' + Math.log10(d.StellarMass * 1e10).toFixed(2) + '</sup> ' + unit
+  )
+  .offset([-1, 0])
+vis.call tip
+
 # workhorse function which is used to place nodes, paths and deal with transitions
 update = (source) ->
   duration = if d3.event and d3.event.altKey then 5000 else 500
@@ -159,9 +173,12 @@ update = (source) ->
     toggle d
     update d
   ).on('mouseover', (d) ->
+    tip.show d
     toggleFirstProgLineTag d, 'hlProg'
     update d
-  ).on('mouseout', (d) ->
+  )
+  .on('mouseout', (d) ->
+    tip.hide d
     toggleFirstProgLineTag d, 'hlProg'
     update d
   )
