@@ -77,16 +77,23 @@ toggleFirstProgLineTag = (selNode, tag) ->
     toggleTag(node, tag)
 
 
+# format galaxy property string
+propertyString = (param, value, unit) ->
+  '<span class="param">'+param+'</span> = '+value+' '+'<span class="unit">'+unit+'</span>'
+
 # create our tooltip handler
 tip = d3.tip()
   .attr('class', 'd3-tip')
   .html((d) ->
-    param = '<span class="param">M<sub>*</sub></span>'
-    unit = '<span class="unit">M<sub>☉</sub></span>'
+    result = ''
+    # ID
+    result += propertyString('ID', d.ID, '') + '<br>'
     if d.StellarMass is 0
-      param + ' = 0 ' + unit
+      value = '0'
     else
-      param + ' = 10<sup>' + Math.log10(d.StellarMass * 1e10).toFixed(2) + '</sup> ' + unit
+      value = Math.log10(d.StellarMass * 1e10).toFixed(2)
+    result += propertyString('M<sub>*</sub>', value, 'M<sub>☉</sub>')
+    result
   )
   .offset([-1, 0])
 vis.call tip
