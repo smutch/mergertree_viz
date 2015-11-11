@@ -173,7 +173,8 @@ update = (source) ->
     toggle d
     update d
   ).on('mouseover', (d) ->
-    tip.show d
+    if d3.event and d3.event.shiftKey
+      tip.show d
     toggleFirstProgLineTag d, 'hlProg'
     update d
   )
