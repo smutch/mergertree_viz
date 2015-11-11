@@ -88,14 +88,28 @@ tip = d3.tip()
     result = ''
     # ID
     result += propertyString('ID', d.ID, '') + '<br>'
+    # Type
+    result += propertyString('Type', d.Type, '') + '<br>'
+    # Len
+    result += propertyString('N<sub>p</sub>', d.Len, '') + '<br>'
+    # Mvir
+    result += propertyString('M<sub>vir</sub>',
+      '10<sup>'+Math.log10(d.Mvir * 1e10).toFixed(2)+'</sup>',
+      'M<sub>☉</sub>')+ '<br>'
+    # StellarMass
     if d.StellarMass is 0
       value = '0'
     else
-      value = Math.log10(d.StellarMass * 1e10).toFixed(2)
-    result += propertyString('M<sub>*</sub>', value, 'M<sub>☉</sub>')
+      value = '10<sup>'+Math.log10(d.StellarMass * 1e10).toFixed(2)+'</sup>'
+    result += propertyString('M<sub>*</sub>', value,
+      'M<sub>☉</sub>') + '<br>'
+    # SFR
+    result += propertyString('M<sub>*</sub>',
+      d.Sfr.toFixed(2),
+      'M<sub>☉</sub>/yr')
     result
   )
-  .offset([-1, 0])
+  .offset([-2, 0])
 vis.call tip
 
 # workhorse function which is used to place nodes, paths and deal with transitions
