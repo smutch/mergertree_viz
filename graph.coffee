@@ -191,7 +191,10 @@ update = (source) ->
     else
       'translate(' + (source.x0 - nodeRadius) + ',' + (source.y0 - nodeRadius) + ')'
   ).on('click', (d) ->
-    toggle d
+    if d3.event and d3.event.shiftKey
+      tip.show d
+    else
+      toggle d
     update d
   ).on('mouseover', (d) ->
     if d3.event and d3.event.shiftKey
